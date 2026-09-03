@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "nome": "Teclado Mecânico",
+    "preco": 250.00,
+    "disponivel": true
+  },
+  {
+    "id": 2,
+    "nome": "Mouse Gamer",
+    "preco": 120.00,
+    "disponivel": true
+  }
+]
