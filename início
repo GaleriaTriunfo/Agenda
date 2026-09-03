@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Agenda Digital</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/pt-br.global.min.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --primary-hover: #1557b0;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #3c4043;
+      --border-color: #dadce0;
+      --shadow-sm: 0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.24);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Tela de Login/Cadastro de Senha */
+    #auth-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .auth-card {
+      background: var(--card-bg);
+      padding: 32px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 380px;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
+
+    .auth-card h2 {
+      margin: 10px 0 8px 0;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    .auth-card p {
+      font-size: 0.85rem;
+      color: #5f6368;
+      margin-bottom: 20px;
+    }
+
+    .auth-card input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    .auth-card button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .auth-card button:hover {
+      background: var(--primary-hover);
+    }
+
+    .error-msg {
+      color: #d93025;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .success-msg {
+      color: #137333;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* App Layout */
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon { font-size: 1.8rem; }
+
+    h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-create {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-action {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #5f6368;
+      font-size: 0.85rem;
+    }
+
+    .btn-action:hover {
+      background-color: #f1f3f4;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    #calendar-container {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid #e8eaed;
+    }
+
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(32,33,36,0.6);
+      backdrop-filter: blur(2px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      padding: 28px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 480px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #5f6368;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #5f6368;
+    }
+
+    input[type="text"], input[type="password"], input[type="datetime-local"], textarea {
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    .form-group-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .color-options {
+      display: flex;
+      gap: 10px;
+    }
+
+    .color-radio { display: none; }
+
+    .color-label {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .color-radio:checked + .color-label::after {
+      content: '✓';
+      color: white;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-save { background: var(--primary-color); color: white; }
+    .btn-cancel { background: transparent; color: #5f6368; }
+    .btn-delete { background: #fce8e6; color: #c5221f; }
+  </style>
+</head>
+<body>
+
+  <!-- Tela de Login / Configuração Inicial -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="brand-icon">🔒</div>
+      <h2 id="auth-title">Agenda Protegida</h2>
+      <p id="auth-desc">Digite sua senha para continuar</p>
+      
+      <!-- Se for primeira vez -->
+      <div id="setup-fields" style="display:none;">
+        <input type="password" id="new-password" placeholder="Crie uma senha">
+        <input type="password" id="confirm-password" placeholder="Confirme a senha" onkeypress="checarTeclaSetup(event)">
+        <button onclick="cadastrarSenha()">Criar Senha e Entrar</button>
+      </div>
+
+      <!-- Se já houver senha registrada -->
+      <div id="login-fields">
+        <input type="password" id="app-password" placeholder="Digite sua senha" onkeypress="checarTeclaLogin(event)">
+        <button onclick="autenticar()">Acessar Agenda</button>
+      </div>
+
+      <div id="error-msg" class="error-msg"></div>
+    </div>
+  </div>
+
+  <header>
+    <div class="brand">
+      <span class="brand-icon">📅</span>
+      <h1>Minha Agenda</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn-create" onclick="abrirModal()">
+        <span>+ Criar evento</span>
+      </button>
+      <button class="btn-action" onclick="abrirModalRedefinir()">⚙️ Redefinir Senha</button>
+      <button class="btn-action" onclick="bloquear()">Sair 🔒</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="calendar-container">
+      <div id="calendar"></div>
+    </div>
+  </main>
+
+  <!-- Modal de Eventos -->
+  <div id="eventoModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitulo">Novo Evento</h2>
+        <button class="close-btn" onclick="fecharModal()">&times;</button>
+      </div>
+      <form id="formEvento">
+        <input type="hidden" id="eventoId">
+        
+        <div class="form-group">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" placeholder="Adicionar título" required>
+        </div>
+
+        <div class="form-group-row">
+          <div class="form-group">
+            <label for="start">Início</label>
+            <input type="datetime-local" id="start" required>
+          </div>
+          <div class="form-group">
+            <label for="end">Fim</label>
+            <input type="datetime-local" id="end" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Cor do Evento</label>
+          <div class="color-options">
+            <input type="radio" name="cor" id="cor-blue" value="#1a73e8" class="color-radio" checked>
+            <label for="cor-blue" class="color-label" style="background-color: #1a73e8;"></label>
+
+            <input type="radio" name="cor" id="cor-green" value="#137333" class="color-radio">
+            <label for="cor-green" class="color-label" style="background-color: #137333;"></label>
+
+            <input type="radio" name="cor" id="cor-red" value="#d93025" class="color-radio">
+            <label for="cor-red" class="color-label" style="background-color: #d93025;"></label>
+
+            <input type="radio" name="cor" id="cor-orange" value="#f2994a" class="color-radio">
+            <label for="cor-orange" class="color-label" style="background-color: #f2994a;"></label>
+
+            <input type="radio" name="cor" id="cor-purple" value="#8e24aa" class="color-radio">
+            <label for="cor-purple" class="color-label" style="background-color: #8e24aa;"></label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" rows="3" placeholder="Detalhes..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btnExcluir" class="btn btn-delete" style="display:none;" onclick="excluirEvento()">Excluir</button>
+          <div>
+            <button type="button" class="btn btn-cancel" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-save">Salvar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Redefinir Senha -->
+  <div id="redefinirModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Redefinir Senha</h2>
+        <button class="close-btn" onclick="fecharModalRedefinir()">&times;</button>
+      </div>
+      <form id="formRedefinir" onsubmit="salvarNovaSenha(event)">
+        <div class="form-group">
+          <label for="current-pass">Senha Atual</label>
+          <input type="password" id="current-pass" required>
+        </div>
+        <div class="form-group">
+          <label for="change-new-pass">Nova Senha</label>
+          <input type="password" id="change-new-pass" required>
+        </div>
+        <div class="form-group">
+          <label for="change-confirm-pass">Confirmar Nova Senha</label>
+          <input type="password" id="change-confirm-pass" required>
+        </div>
+        <div id="modal-pass-error" class="error-msg"></div>
+        <div id="modal-pass-success" class="success-msg">Senha alterada com sucesso!</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-cancel" onclick="fecharModalRedefinir()">Cancelar</button>
+          <button type="submit" class="btn btn-save">Alterar Senha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Inicialização do estado de autenticação
+    window.addEventListener('DOMContentLoaded', () => {
+      const senhaSalva = localStorage.getItem('agenda_app_password');
+      if (!senhaSalva) {
+        // Primeira vez: precisa cadastrar uma senha
+        document.getElementById('auth-title').innerText = 'Bem-vindo!';
+        document.getElementById('auth-desc').innerText = 'Crie uma senha de acesso para proteger sua agenda.';
+        document.getElementById('login-fields').style.display = 'none';
+        document.getElementById('setup-fields').style.display = 'block';
+      }
+    });
+
+    function cadastrarSenha() {
+      const p1 = document.getElementById('new-password').value;
+      const p2 = document.getElementById('confirm-password').value;
+      const errorMsg = document.getElementById('error-msg');
+
+      if (!p1) {
+        exibirErroAuth('Por favor, digite uma senha.');
+        return;
+      }
+      if (p1 !== p2) {
+        exibirErroAuth('As senhas não coincidem!');
+        return;
+      }
+
+      localStorage.setItem('agenda_app_password', p1);
+      desbloquearApp();
+    }
+
+    function autenticar() {
+      const senhaInput = document.getElementById('app-password').value;
+      const senhaSalva = localStorage.getItem('agenda_app_password') || '1234';
+
+      if (senhaInput === senhaSalva) {
+        desbloquearApp();
+      } else {
+        exibirErroAuth('Senha incorreta! Tente novamente.');
+      }
+    }
+
+    function exibirErroAuth(msg) {
+      const errorMsg = document.getElementById('error-msg');
+      errorMsg.innerText = msg;
+      errorMsg.style.display = 'block';
+    }
+
+    function desbloquearApp() {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('error-msg').style.display = 'none';
+      document.getElementById('app-password').value = '';
+      if (!calendar) initCalendar();
+    }
+
+    function checarTeclaLogin(e) { if (e.key === 'Enter') autenticar(); }
+    function checarTeclaSetup(e) { if (e.key === 'Enter') cadastrarSenha(); }
+
+    function bloquear() {
+      const senhaSalva = localStorage.getItem('agenda_app_password');
+      if (!senhaSalva) {
+        document.getElementById('auth-title').innerText = 'Bem-vindo!';
+        document.getElementById('auth-desc').innerText = 'Crie uma senha de acesso para proteger sua agenda.';
+        document.getElementById('login-fields').style.display = 'none';
+        document.getElementById('setup-fields').style.display = 'block';
+      } else {
+        document.getElementById('auth-title').innerText = 'Agenda Protegida';
+        document.getElementById('auth-desc').innerText = 'Digite sua senha para continuar';
+        document.getElementById('login-fields').style.display = 'block';
+        document.getElementById('setup-fields').style.display = 'none';
+      }
+      document.getElementById('auth-screen').style.display = 'flex';
+    }
+
+    // Modal de Redefinição de Senha
+    const redefinirModal = document.getElementById('redefinirModal');
+
+    function abrirModalRedefinir() {
+      document.getElementById('formRedefinir').reset();
+      document.getElementById('modal-pass-error').style.display = 'none';
+      document.getElementById('modal-pass-success').style.display = 'none';
+      redefinirModal.style.display = 'flex';
+    }
+
+    function fecharModalRedefinir() {
+      redefinirModal.style.display = 'none';
+    }
+
+    function salvarNovaSenha(e) {
+      e.preventDefault();
+      const currentPass = document.getElementById('current-pass').value;
+      const newPass = document.getElementById('change-new-pass').value;
+      const confirmPass = document.getElementById('change-confirm-pass').value;
+      
+      const errorEl = document.getElementById('modal-pass-error');
+      const successEl = document.getElementById('modal-pass-success');
+
+      const senhaSalva = localStorage.getItem('agenda_app_password') || '1234';
+
+      if (currentPass !== senhaSalva) {
+        errorEl.innerText = 'Senha atual incorreta!';
+        errorEl.style.display = 'block';
+        successEl.style.display = 'none';
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        errorEl.innerText = 'A nova senha e a confirmação não coincidem!';
+        errorEl.style.display = 'block';
+        successEl.style.display = 'none';
+        return;
+      }
+
+      localStorage.setItem('agenda_app_password', newPass);
+      errorEl.style.display = 'none';
+      successEl.style.display = 'block';
+
+      setTimeout(() => {
+        fecharModalRedefinir();
+      }, 1200);
+    }
+
+    /* FullCalendar Logic */
+    let calendar;
+    const modal = document.getElementById('eventoModal');
+    const form = document.getElementById('formEvento');
+    const btnExcluir = document.getElementById('btnExcluir');
+
+    function carregarEventos() {
+      const eventosSalvos = localStorage.getItem('agenda_eventos_v3');
+      return eventosSalvos ? JSON.parse(eventosSalvos) : [];
+    }
+
+    function salvarEventos(eventos) {
+      localStorage.setItem('agenda_eventos_v3', JSON.stringify(eventos));
+    }
+
+    function initCalendar() {
+      const calendarEl = document.getElementById('calendar');
+
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: { today: 'Hoje', month: 'Mês', week: 'Semana', day: 'Dia' },
+        editable: true,
+        selectable: true,
+        events: carregarEventos(),
+
+        select: function(info) {
+          abrirModal();
+          document.getElementById('start').value = info.startStr.slice(0, 16);
+          let dataFim = new Date(info.start);
+          dataFim.setHours(dataFim.getHours() + 1);
+          document.getElementById('end').value = dataFim.toISOString().slice(0, 16);
+        },
+
+        eventClick: function(info) {
+          const e = info.event;
+          abrirModal();
+          
+          document.getElementById('eventoId').value = e.id;
+          document.getElementById('titulo').value = e.title;
+          document.getElementById('start').value = e.start.toISOString().slice(0, 16);
+          document.getElementById('end').value = e.end ? e.end.toISOString().slice(0, 16) : e.start.toISOString().slice(0, 16);
+          
+          const cor = e.backgroundColor || '#1a73e8';
+          const radioCor = document.querySelector(`input[name="cor"][value="${cor}"]`);
+          if (radioCor) radioCor.checked = true;
+
+          document.getElementById('descricao').value = e.extendedProps.description || '';
+          document.getElementById('modalTitulo').innerText = 'Editar Evento';
+          btnExcluir.style.display = 'inline-block';
+        },
+
+        eventDrop: sincronizarEventos,
+        eventResize: sincronizarEventos
+      });
+
+      calendar.render();
+    }
+
+    function abrirModal() {
+      form.reset();
+      document.getElementById('eventoId').value = '';
+      document.getElementById('modalTitulo').innerText = 'Novo Evento';
+      document.querySelector('input[name="cor"][value="#1a73e8"]').checked = true;
+      btnExcluir.style.display = 'none';
+      modal.style.display = 'flex';
+    }
+
+    function fecharModal() {
+      modal.style.display = 'none';
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('eventoId').value;
+      const title = document.getElementById('titulo').value;
+      const start = document.getElementById('start').value;
+      const end = document.getElementById('end').value;
+      const color = document.querySelector('input[name="cor"]:checked').value;
+      const description = document.getElementById('descricao').value;
+
+      if (id) {
+        const evento = calendar.getEventById(id);
+        if (evento) {
+          evento.setProp('title', title);
+          evento.setStart(start);
+          evento.setEnd(end);
+          evento.setProp('backgroundColor', color);
+          evento.setProp('borderColor', color);
+          evento.setExtendedProp('description', description);
+        }
+      } else {
+        calendar.addEvent({
+          id: Date.now().toString(),
+          title: title,
+          start: start,
+          end: end,
+          backgroundColor: color,
+          borderColor: color,
+          extendedProps: { description: description }
+        });
+      }
+
+      sincronizarEventos();
+      fecharModal();
+    });
+
+    function excluirEvento() {
+      const id = document.getElementById('eventoId').value;
+      if (id) {
+        const evento = calendar.getEventById(id);
+        if (evento && confirm('Deseja realmente excluir este evento?')) {
+          evento.remove();
+          sincronizarEventos();
+          fecharModal();
+        }
+      }
+    }
+
+    function sincronizarEventos() {
+      const todosEventos = calendar.getEvents().map(e => ({
+        id: e.id,
+        title: e.title,
+        start: e.startStr,
+        end: e.endStr,
+        backgroundColor: e.backgroundColor,
+        borderColor: e.borderColor,
+        description: e.extendedProps.description
+      }));
+      salvarEventos(todosEventos);
+    }
+  </script>
+</body>
+</html>
