@@ -303,6 +303,38 @@
     .btn-delete { background: #fce8e6; color: #c5221f; }
   </style>
 </head>
+  async function atualizarDados() {
+  const url = 'https://api.exemplo.com/usuarios/123';
+
+  // Dados completos que vão substituir o recurso com ID 123
+  const dadosAtualizados = {
+    nome: 'Maria Silva',
+    email: 'maria.silva@email.com',
+    status: 'ativo'
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'PUT', // Define o método HTTP
+      headers: {
+        'Content-Type': 'application/json', // Informa que o corpo é JSON
+        'Authorization': 'Bearer SEU_TOKEN_AQUI' // (Opcional) Autenticação
+      },
+      body: JSON.stringify(dadosAtualizados) // Converte o objeto JS para String JSON
+    });
+
+    if (response.ok) {
+      const resultado = await response.json();
+      console.log('Recurso atualizado com sucesso:', resultado);
+    } else {
+      console.error('Erro na requisição:', response.status);
+    }
+  } catch (error) {
+    console.error('Falha na conexão:', error);
+  }
+}
+
+atualizarDados();
 <body>
 
   <!-- Tela de Login / Configuração Inicial -->
