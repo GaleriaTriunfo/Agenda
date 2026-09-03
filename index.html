@@ -11,38 +11,6 @@
   
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-  <!-- Cole o código JavaScript DENTRO das tags <script> -->
-<script>
-  async function atualizarDados() {
-    const url = 'https://api.github.com/repos/SEU_USUARIO/SEU_REPO/contents/SEU_ARQUIVO.json';
-    const dadosAtualizados = {
-      // Seus dados aqui
-    };
-
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer SEU_TOKEN_AQUI'
-        },
-        body: JSON.stringify(dadosAtualizados)
-      });
-
-      if (response.ok) {
-        const resultado = await response.json();
-        console.log('Recurso atualizado com sucesso:', resultado);
-      } else {
-        console.error('Erro na requisição:', response.status);
-      }
-    } catch (error) {
-      console.error('Falha na conexão:', error);
-    }
-  }
-
-  // Chame a função quando necessário
-  // atualizarDados();
-</script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/pt-br.global.min.js"></script>
 
   <style>
