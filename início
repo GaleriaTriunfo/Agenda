@@ -208,7 +208,7 @@
       padding: 28px;
       border-radius: 16px;
       width: 90%;
-      max-width: 480px;
+      max-width: 470px;
       box-shadow: var(--shadow-md);
     }
 
